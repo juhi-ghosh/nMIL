@@ -1,0 +1,4 @@
+cut -d";" -f5 10.csv|tr -d "\"" >> allData.txt
+sed 's/http:.*//g' allData.txt > alldata2.txt
+sed 's/https:.*//g' alldata2.txt > onlyTweets.txt 
+sed '/^$/d' text/10.txt > textt/10.txt 	
