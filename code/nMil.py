@@ -236,11 +236,9 @@ def computeTerm5(wt,r,instanceD,inputD):
 	return sum_bag
 
 
-def getDeltaW(wt,inputD,instanceD,bagD,superbagD,Y):
+def getDeltaW(r,wt,inputD,instanceD,bagD,superbagD,Y):
 	
-	r = random.randint(1,len(superbagD))
-
-
+	
 	term1 = lamda * wt
 	term2 = computeTerm2(r,superbagD,instanceD,inputD,Y)
 	term3 = computeTerm3(r,superbagD,bagD,instanceD,inputD)
@@ -253,7 +251,7 @@ def getDeltaW(wt,inputD,instanceD,bagD,superbagD,Y):
 
 def computeWeight(inputD,Y,wt):
 	
-	eta = 1
+	eta = 0.8
 	instanceD = inst_pij(wt,inputD)
 	# print instanceD
 	# print "****************"
@@ -263,9 +261,14 @@ def computeWeight(inputD,Y,wt):
 	superbagD = superbag_P(bagD)
 	# print superbagD
 	# print "****************"
-	delW = getDeltaW(wt, inputD, instanceD, bagD, superbagD, Y)
+	
+	r = random.randint(1,len(superbagD))
 
-	wt = wt - (delW*eta)
+	for r in range(1,5):
+		delW = getDeltaW(r,wt, inputD, instanceD, bagD, superbagD, Y)
+		wt = wt - (delW*eta)
+
+
 	# print "weight: ",wt
 	newInstanceD = inst_pij(wt,inputD)
 	return wt, newInstanceD
