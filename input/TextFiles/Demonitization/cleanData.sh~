@@ -1,0 +1,9 @@
+#!/usr/bin
+
+dt=17
+for i in {1..20}
+do
+	grep -v "Lead story now on" textt/$i.txt > text/$i.txt
+	grep -v "Top stories now on" text/$i.txt > textt/$i.txt
+	
+done	
