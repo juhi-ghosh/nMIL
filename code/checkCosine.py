@@ -46,19 +46,54 @@ def getSimilar_Precursors(targetVec_List,inputD,matrix):
         with open('../input/dataSentences.pickle', 'rb') as handle:
   		sentenceDict = pickle.load(handle)
 
+	prevDay = matrix[0][1]
+        day_cos_prec_list = []
+	day_cos_selprec_list = []
+
+        mean_cos = 0.0
+        total_cos1 = 0.0
+        total_cos2 = 0.0
+        count_cos1 = 0
+        count_cos2 = 0
 	for inx in matrix:
 		max_score=-1.0
+		
 		for entry in targetVec_List:
 			cos_sim = vector_cos5(inputD[inx[0]][inx[1]][inx[2]], entry)
 			if max_score < cos_sim:
-				max_score = cos_sim
+				max_score = cos_sim			
 				
-		if max_score>0.75:
+		if max_score>0.1:
 			print "cosine_similarity", sentenceDict[inx[0]][inx[1]][inx[2]], max_score
-			sel_precursor.append(entry)
-			
+			sel_precursor.append(sentenceDict[inx[0]][inx[1]][inx[2]])
+
+			#creating day-wise mean list for selected cosine scores of most similar articles
+			if inx[1] == prevDay:
+				total_cos2 = total_cos2 + max_score
+				count_cos2 = count_cos2 + 1;
+			else:
+				mean_cos = total_cos2/count_cos2;
+				day_cos_selprec_list.append(mean_cos)
+				mean_cos = 0.0
+				total_cos2 = 0.0
+				count_cos2 = 0
+
+		#creating day-wise mean list for cosine scores of all detected precursor articles
+		if inx[1] == prevDay:
+			total_cos1 = total_cos1 + max_score
+			count_cos1 = count_cos1 + 1;
+		else:
+			mean_cos = total_cos1/count_cos1;
+			day_cos_prec_list.append(mean_cos)
+			mean_cos = 0.0
+			total_cos1 = 0.0
+			count_cos1 = 0
+
+		#updating the day for which we calculate mean of cosine scores
+		prevDay = inx[1]		
 	
-	return sel_precursor
+		
+	return sel_precursor, day_cos_prec_list, day_cos_selprec_list
 	
 
 #initialise input
@@ -69,7 +104,7 @@ def findCosineScore(matrix):
 	  		superBagsDict = pickle.load(handle)
 
 	targetVec_List = getListTargetVec()
-	sel_precursor = getSimilar_Precursors(targetVec_List,superBagsDict,matrix)
-	return (len(sel_precursor)*1.0/len(matrix)*1.0)*100	
+	sel_precursor, day_cos_prec_list, day_cos_selprec_list = getSimilar_Precursors(targetVec_List,superBagsDict,matrix)
+	return (len(sel_precursor)*1.0/len(matrix)*1.0)*100, day_cos_prec_list, day_cos_selprec_list	
 
 
