@@ -6,7 +6,7 @@ import numpy as np
 import math
 
 def vector_cos5(v1, v2):
-    
+	
    v1 = np.array(v1)
    v2 = np.array(v2)
    prod = np.dot(v1, v2)
@@ -32,30 +32,71 @@ def getListTargetVec():
 	l = []
 	targetInstances = []
 	for d in test_docs:
-	    l= [float(x) for x in m.infer_vector(d, alpha=start_alpha, steps=infer_epoch)]
-	    targetInstances.append(np.array(l))
+		l= [float(x) for x in m.infer_vector(d, alpha=start_alpha, steps=infer_epoch)]
+		targetInstances.append(np.array(l))
 
 	return targetInstances  
+
+#getting Probability and cosine values for all articles
+def getSimilar_All( targetVec , superBagsDict, newInstanceD):
+	all_cos_list = []
+	all_prob_list = []
+	
+	for k in superBagsDict.keys():
+		for j in superBagsDict[k].keys():
+			for i in superBagsDict[k][j].keys():
+
+				#getting Probability density values for all articles
+				all_prob_list.append(newInstanceD[k][j][i])
+
+				#getting Cosine values for all articles
+				max_score = -1.0
+				for entry in targetVec:
+					cos_sim = vector_cos5(superBagsDict[k][j][i], entry)
+					if max_score < cos_sim:
+						max_score = cos_sim
+				all_cos_list.append(max_score)
+
+	return all_cos_list, all_prob_list
+
+
+#getting Probability and cosine values for all articles > tau
+def getProb_Tau(targetVec_List, matrix, newInstanceD, superBagsDict):
+	day_prob_list = []
+	day_cos_list = []
+	for inx in matrix:
+		day_prob_list.append(newInstanceD[inx[0]][inx[1]][inx[2]])
+		max_score=-1.0
+		
+		for entry in targetVec_List:
+			cos_sim = vector_cos5(superBagsDict[inx[0]][inx[1]][inx[2]], entry)
+			if max_score < cos_sim:
+				max_score = cos_sim	
+		day_cos_list.append(max_score)
+
+	return day_prob_list, day_cos_list
+
+
 
 
 #dictionary structure for instances vectors
 def getSimilar_Precursors(targetVec_List,inputD,matrix):
+	
 
 	max_score = -1.0
-        sel_precursor=[]
-        with open('../input/dataSentences.pickle', 'rb') as handle:
-  		sentenceDict = pickle.load(handle)
+	sel_precursor=[]
+	with open('../input/dataSentences.pickle', 'rb') as handle:
+		sentenceDict = pickle.load(handle)
 
 	prevDay = matrix[0][1]
-        day_cos_prec_list = []
+	
 	day_cos_selprec_list = []
 
-        mean_cos = 0.0
-        total_cos1 = 0.0
-        total_cos2 = 0.0
-        count_cos1 = 0
-        count_cos2 = 0
+	mean_cos = 0.0
+	total_cos = 0.0
+	count_cos = 0
 	for inx in matrix:
+		print "inx:", inx, "prev:", prevDay
 		max_score=-1.0
 		
 		for entry in targetVec_List:
@@ -63,48 +104,51 @@ def getSimilar_Precursors(targetVec_List,inputD,matrix):
 			if max_score < cos_sim:
 				max_score = cos_sim			
 				
-		if max_score>0.1:
+		if max_score>0.79:
 			print "cosine_similarity", sentenceDict[inx[0]][inx[1]][inx[2]], max_score
 			sel_precursor.append(sentenceDict[inx[0]][inx[1]][inx[2]])
 
 			#creating day-wise mean list for selected cosine scores of most similar articles
 			if inx[1] == prevDay:
-				total_cos2 = total_cos2 + max_score
-				count_cos2 = count_cos2 + 1;
+				total_cos = total_cos + max_score
+				count_cos = count_cos + 1;
 			else:
-				mean_cos = total_cos2/count_cos2;
-				day_cos_selprec_list.append(mean_cos)
-				mean_cos = 0.0
-				total_cos2 = 0.0
-				count_cos2 = 0
-
-		#creating day-wise mean list for cosine scores of all detected precursor articles
-		if inx[1] == prevDay:
-			total_cos1 = total_cos1 + max_score
-			count_cos1 = count_cos1 + 1;
-		else:
-			mean_cos = total_cos1/count_cos1;
-			day_cos_prec_list.append(mean_cos)
+				total_cos = max_score
+				count_cos = 1
+				
+		
+		if inx[1] != prevDay:
+			mean_cos = total_cos/count_cos;
+			print "********selected",mean_cos
+			day_cos_selprec_list.append(mean_cos)
 			mean_cos = 0.0
-			total_cos1 = 0.0
-			count_cos1 = 0
+			
 
 		#updating the day for which we calculate mean of cosine scores
-		prevDay = inx[1]		
+		prevDay = inx[1]
+
 	
-		
-	return sel_precursor, day_cos_prec_list, day_cos_selprec_list
+	mean_cos = total_cos/count_cos;
+	day_cos_selprec_list.append(mean_cos)
+
+	print day_cos_selprec_list
+
+			
+	return sel_precursor, day_cos_selprec_list
 	
 
 #initialise input
 superBagsDict = {}
-targetVec = {}
-def findCosineScore(matrix):
+
+def findCosineScore(matrix, newInstanceD):
 	with open('../input/DoctoVecdata.pickle', 'rb') as handle:
-	  		superBagsDict = pickle.load(handle)
+			superBagsDict = pickle.load(handle)
 
 	targetVec_List = getListTargetVec()
-	sel_precursor, day_cos_prec_list, day_cos_selprec_list = getSimilar_Precursors(targetVec_List,superBagsDict,matrix)
-	return (len(sel_precursor)*1.0/len(matrix)*1.0)*100, day_cos_prec_list, day_cos_selprec_list	
+
+	sel_precursor, day_cos_selprec_list = getSimilar_Precursors(targetVec_List,superBagsDict,matrix)
+	all_cos_list, all_prob_list = getSimilar_All( targetVec_List, superBagsDict, newInstanceD)
+	day_prob_list, day_cos_list = getProb_Tau(targetVec_List, matrix, newInstanceD, superBagsDict)
+	return (len(sel_precursor)*1.0/len(matrix)*1.0)*100, day_cos_selprec_list, all_cos_list, all_prob_list, day_prob_list,day_cos_list	
 
 
