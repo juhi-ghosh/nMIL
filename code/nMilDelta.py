@@ -1,12 +1,25 @@
 #!/usr/bin/python
-
+import pickle
 import numpy as np
 import random
+import math
 
 m0=0.5
 p0=0.5
 beta=3.0
 lamda=0.05
+
+
+
+
+def cosineSimilarity(v1, v2):
+    
+   v1 = np.array(v1)
+   v2 = np.array(v2)
+   prod = np.dot(v1, v2)
+   len1 = math.sqrt(np.dot(v1, v1))
+   len2 = math.sqrt(np.dot(v2, v2))
+   return prod / (len1 * len2)*1.0
 
 
 def getSign(z):
@@ -145,8 +158,10 @@ def computeTerm3(r,superbagD,bagD,instanceD,inputD):
 
 		Pi = bagD[r][i]
 		Pi1 = 0
+		
 		if i-1 >0 :
 			Pi1 = bagD[r][i-1]
+			# similarity = getSimilarity(inputD[r][i],inputD[r][i-1])
 
 		sum_inst = 0
 		n = 0
@@ -160,7 +175,7 @@ def computeTerm3(r,superbagD,bagD,instanceD,inputD):
 			n = n + 1
 
 		sum_inst = sum_inst/float(n)
-		sum_bag = sum_bag + (2 * (Pi - Pi1 ) * sum_inst)
+		sum_bag = sum_bag + ( 2 * (Pi - Pi1 ) * sum_inst) #cross bag cosine similarity should be multiplied
 
 	sum_bag = sum_bag / float(t)
 
@@ -180,8 +195,10 @@ def computeTerm4(r,superbagD,bagD,instanceD,inputD):
 
 		Pi = bagD[r][i]
 		Pi1 = 0
+		# similarity = 1
 		if i-1 >0 :
 			Pi1 = bagD[r][i-1]
+			# similarity = getSimilarity(inputD[r][i],inputD[r][i-1])
 
 		sum_inst = 0
 		n = 0
@@ -236,20 +253,34 @@ def computeTerm5(wt,r,instanceD,inputD):
 	return sum_bag
 
 
-def getDeltaW(r,wt,inputD,instanceD,bagD,superbagD,Y):
+def getCrossBagVal(bagsDict):
+	
+	value = 0
+
+	for i in bagsDict.keys():
+		value = value + bagsDict[i]
+
+	return value/float(len(bagsDict))
+
+def getDeltaW(r,wt,inputD,instanceD,bagD,superbagD,crossBagDict,Y):
 	
 	
+	crossBagVal = getCrossBagVal(crossBagDict[r])
+
 	term1 = lamda * wt
 	term2 = computeTerm2(r,superbagD,instanceD,inputD,Y)
 	term3 = computeTerm3(r,superbagD,bagD,instanceD,inputD)
 	term4 = computeTerm4(r,superbagD,bagD,instanceD,inputD)
 	term5 = computeTerm5(wt,r,instanceD,inputD)
 		
-	delW = term1 - term2 + term3 - term4 - term5
+	delW = term1 - term2 + crossBagVal*(term3 - term4) - term5
 
 	return delW
 
-def computeWeight(eta,inputD,Y,wt):
+def computeWeightDelta(eta,inputD,Y,wt):
+
+	with open('../input/crossBagSimilarity.pickle', 'rb') as handle:
+  		crossBagDict = pickle.load(handle)
 	
 	# eta = 0.8
 	instanceD = inst_pij(wt,inputD)
@@ -265,17 +296,10 @@ def computeWeight(eta,inputD,Y,wt):
 	r = random.randint(1,len(superbagD))
 
 	for r in range(1,5):
-		delW = getDeltaW(r,wt, inputD, instanceD, bagD, superbagD, Y)
+		delW = getDeltaW(r,wt, inputD, instanceD, bagD, superbagD, crossBagDict,Y)
 		wt = wt - (delW*eta)
 
 
 	# print "weight: ",wt
 	newInstanceD = inst_pij(wt,inputD)
 	return wt, newInstanceD
-
-	
-
-
-
-
-
