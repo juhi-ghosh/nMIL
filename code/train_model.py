@@ -17,7 +17,7 @@ worker_count = 1 #number of parallel processes
 #pretrained_emb = "toy_data/pretrained_word_embeddings.txt" #None if use without pretrained embeddings
 
 #input corpus
-train_corpus = "../input/model/onlyTweets2.txt"
+train_corpus = "../input/model/OnlyTweets3.txt"
 
 #output model
 saved_path = "../input/model/model.bin"
