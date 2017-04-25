@@ -96,7 +96,7 @@ def getSimilar_Precursors(targetVec_List,inputD,matrix):
 	total_cos = 0.0
 	count_cos = 0
 	for inx in matrix:
-		print "inx:", inx, "prev:", prevDay
+		# print "inx:", inx, "prev:", prevDay
 		max_score=-1.0
 		
 		for entry in targetVec_List:
@@ -105,7 +105,7 @@ def getSimilar_Precursors(targetVec_List,inputD,matrix):
 				max_score = cos_sim			
 				
 		if max_score>0.79:
-			print "cosine_similarity", sentenceDict[inx[0]][inx[1]][inx[2]], max_score
+			print sentenceDict[inx[0]][inx[1]][inx[2]]
 			sel_precursor.append(sentenceDict[inx[0]][inx[1]][inx[2]])
 
 			#creating day-wise mean list for selected cosine scores of most similar articles
@@ -119,7 +119,7 @@ def getSimilar_Precursors(targetVec_List,inputD,matrix):
 		
 		if inx[1] != prevDay:
 			mean_cos = total_cos/count_cos;
-			print "********selected",mean_cos
+			# print "********selected",mean_cos
 			day_cos_selprec_list.append(mean_cos)
 			mean_cos = 0.0
 			
@@ -131,7 +131,7 @@ def getSimilar_Precursors(targetVec_List,inputD,matrix):
 	mean_cos = total_cos/count_cos;
 	day_cos_selprec_list.append(mean_cos)
 
-	print day_cos_selprec_list
+	# print day_cos_selprec_list
 
 			
 	return sel_precursor, day_cos_selprec_list

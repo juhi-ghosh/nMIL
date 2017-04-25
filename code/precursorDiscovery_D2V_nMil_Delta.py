@@ -25,7 +25,7 @@ def graph_est_Prob(pY,nY):
 
 
 	plt.legend([p1, p2], ["Positive", "Negative"])
-	plt.title("Estimated Probability")
+	plt.title("Estimated Probability using nMIL Algorithm")
 	plt.xlabel("Probability Range Value")
 	plt.ylabel("Frequency(No. of Articles)")
 	plt.show()
@@ -38,7 +38,7 @@ def graph_cos_days(day_cos_selprec_list):
 	days = [i+1 for i in range(d)]
 
 	# print day_cos_selprec_list
-	print days
+	#print days
 
 	plt.plot(days, day_cos_selprec_list , 'bo', linestyle= '-')
 	plt.axis([0, 11, 0, 1.2])
@@ -49,7 +49,7 @@ def graph_cos_days(day_cos_selprec_list):
 		'size': 14,
 		}
 
-	plt.title('Mean of Relative Cosine Values w.r.t. Target Events in History Days\n')
+	plt.title('Mean of Relative Cosine Values w.r.t. Target Events in History Days\n (using nMIL Algorithm)\n')
 	plt.xlabel("History Days")
 	plt.ylabel("Precursors Cosine Similarity Score")
 	plt.show()
@@ -68,7 +68,7 @@ def graph_cos_prob(day_cos_list,all_cos_list, day_prob_list, all_prob_list):
 	days2 = [i+1 for i in range(d)]
 
 	
-	plt.title('Distribution of Relative Cosine Similarity\n')
+	plt.title('Distribution of Relative Cosine Similarity using nMIL Algorithm\n')
 	plt.xlabel("Day-wise Articles")
 	plt.ylabel("Probability Density                     Cosine Similarity")
 	plt.plot( days1,all_prob_list, 'go', linestyle= '-')
@@ -87,7 +87,7 @@ def graph_cos_prob(day_cos_list,all_cos_list, day_prob_list, all_prob_list):
 	plt.plot( days4,day_cos_list, 'yo', linestyle= '-')
 
 	plt.xlabel("Day-wise Articles (tau = 0.11)")
-	plt.title('Distribution of Relative Cosine Similarity\n')
+	plt.title('Distribution of Relative Cosine Similarity using nMIL Algorithm\n')
 	plt.xlabel("Day-wise Articles")
 	plt.ylabel("Probability Density                     Cosine Similarity")
 	#plotting for only precursors
